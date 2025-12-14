@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import { WelcomeStep } from '@/components/onboarding/WelcomeStep';
 import { SelectUloomStep } from '@/components/onboarding/SelectUloomStep';
@@ -22,8 +23,13 @@ const ONBOARDING_STEPS = [
 ];
 
 const Index = () => {
+  const navigate = useNavigate();
   const { state, setCurrentStep, selectUloom, claimMasteredIlms, addDiagnosticResult, updateSkipDecision, generateManhaj, resetOnboarding } = useOnboarding();
   const [showOnboarding, setShowOnboarding] = useState(!state.completedOnboarding);
+
+  const handleGoHome = () => {
+    navigate('/');
+  };
 
   const handleStartOnboarding = () => {
     setCurrentStep(1);
@@ -146,7 +152,11 @@ const Index = () => {
 
       {/* Progress indicator for steps 1-5 */}
       {state.currentStep > 0 && state.currentStep < 6 && (
-        <ProgressIndicator steps={ONBOARDING_STEPS.slice(1)} currentStep={state.currentStep - 1} />
+        <ProgressIndicator 
+          steps={ONBOARDING_STEPS.slice(1)} 
+          currentStep={state.currentStep - 1} 
+          onGoHome={handleGoHome}
+        />
       )}
 
       {/* Step content with padding for progress indicator */}
