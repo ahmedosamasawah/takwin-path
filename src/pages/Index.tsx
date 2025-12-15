@@ -48,14 +48,14 @@ const Index = () => {
     setCurrentStep(5);
   };
 
-  const handleSkipDiagnostics = () => {
+  const handleSkipDiagnostics = async () => {
     // No diagnostics needed, go directly to manhaj generation
-    generateManhaj();
+    await generateManhaj();
     setShowOnboarding(false);
   };
 
-  const handleCompleteOnboarding = () => {
-    generateManhaj();
+  const handleCompleteOnboarding = async () => {
+    await generateManhaj();
     setShowOnboarding(false);
   };
 
