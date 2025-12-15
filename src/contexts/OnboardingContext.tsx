@@ -37,7 +37,7 @@ interface OnboardingContextType {
   claimMasteredIlms: (ilmIds: string[]) => void;
   addDiagnosticResult: (result: DiagnosticResult) => void;
   updateSkipDecision: (ilmId: string, matnId: string, skip: boolean) => void;
-  generateManhaj: () => void;
+  generateManhaj: () => Promise<void>;
   resetOnboarding: () => void;
   startStudyingMatn: (matnId: string) => void;
   completeMatn: (matnId: string) => void;
@@ -94,44 +94,47 @@ export const OnboardingProvider: React.FC<{ children: ReactNode }> = ({ children
     }));
   };
 
-  const generateManhaj = () => {
-    const manhaj: ManhadjEntry[] = [];
-    const { selectedUloom, diagnosticResults } = state;
+  const generateManhaj = (): Promise<void> => {
+    return new Promise((resolve) => {
+      const newManhaj: ManhadjEntry[] = [];
+      const { selectedUloom, diagnosticResults } = state;
 
-    // Import uloomData dynamically to avoid circular dependency
-    import('@/data/mockData').then(({ uloomData }) => {
-      selectedUloom.forEach(uloomId => {
-        const uloom = uloomData.find(u => u.id === uloomId);
-        if (!uloom) return;
+      // Import uloomData dynamically to avoid circular dependency
+      import('@/data/mockData').then(({ uloomData }) => {
+        selectedUloom.forEach(uloomId => {
+          const uloom = uloomData.find(u => u.id === uloomId);
+          if (!uloom) return;
 
-        uloom.ilms.forEach(ilm => {
-          const diagResult = diagnosticResults.find(r => r.ilmId === ilm.id);
+          uloom.ilms.forEach(ilm => {
+            const diagResult = diagnosticResults.find(r => r.ilmId === ilm.id);
 
-          ilm.matns.forEach(matn => {
-            let status: 'pending' | 'skipped' = 'pending';
+            ilm.matns.forEach(matn => {
+              let status: 'pending' | 'skipped' = 'pending';
 
-            if (diagResult) {
-              const matnResult = diagResult.matnResults.find(mr => mr.matnId === matn.id);
-              if (matnResult?.skipEligible && matnResult?.userWantsToSkip) {
-                status = 'skipped';
+              if (diagResult) {
+                const matnResult = diagResult.matnResults.find(mr => mr.matnId === matn.id);
+                if (matnResult?.skipEligible && matnResult?.userWantsToSkip) {
+                  status = 'skipped';
+                }
               }
-            }
 
-            manhaj.push({
-              uloomId,
-              ilmId: ilm.id,
-              matnId: matn.id,
-              status
+              newManhaj.push({
+                uloomId,
+                ilmId: ilm.id,
+                matnId: matn.id,
+                status
+              });
             });
           });
         });
-      });
 
-      setState(prev => ({
-        ...prev,
-        manhaj: [...prev.manhaj, ...manhaj],
-        completedOnboarding: true
-      }));
+        setState(prev => ({
+          ...prev,
+          manhaj: [...prev.manhaj, ...newManhaj],
+          completedOnboarding: true
+        }));
+        resolve();
+      });
     });
   };
 
