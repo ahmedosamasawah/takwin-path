@@ -129,7 +129,7 @@ export const OnboardingProvider: React.FC<{ children: ReactNode }> = ({ children
 
       setState(prev => ({
         ...prev,
-        manhaj,
+        manhaj: [...prev.manhaj, ...manhaj],
         completedOnboarding: true
       }));
     });
